@@ -9,6 +9,7 @@ import VehicleAlerts from './pages/VehicleAlerts';
 import TrafficDashboard from './pages/TrafficDashboard';
 import HospitalDashboard from './pages/HospitalDashboard';
 import AccidentHelp from './pages/AccidentHelp';
+import FamilyEmergency from './pages/FamilyEmergency';
 import Demo from './pages/Demo';
 import './App.css';
 
@@ -27,6 +28,7 @@ function App() {
             <Route path="/hospital" element={<HospitalDashboard />} />
             <Route path="/accident-help" element={<AccidentHelp />} />
             <Route path="/demo" element={<Demo />} />
+            <Route path="/family-emergency" element={<FamilyEmergency/>} />
           </Routes>
         </main>
         <Footer />

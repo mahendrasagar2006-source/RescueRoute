@@ -18,19 +18,20 @@ const Navbar = () => {
 
   const navLinks = [
     { path: '/', label: 'Home' },
-    { path: '/how-it-works', label: 'How It Works' },
+    //{ path: '/how-it-works', label: 'How It Works' },
     { path: '/vehicle-alerts', label: 'Vehicles' },
     { path: '/traffic', label: 'Traffic' },
     { path: '/hospital', label: 'Hospital' },
     { path: '/accident-help', label: 'Accident' },
+    { path: '/family-emergency', label: 'FamilyEmergency' }
   ];
 
   return (
     <nav className={`navbar ${scrolled ? 'scrolled' : ''}`}>
       <div className="nav-container">
         <Link to="/" className="logo">
-          <img src={ambulanceIcon} alt="RescueRoute" width="32" />
-          <span className="logo-text" style={{ marginLeft: 8 }}>RescueRoute</span>
+          <img src={ambulanceIcon} alt="RescueRoute" width="100" />
+          <span className="logo-text" style={{ marginLeft: 8 }}>ResQ</span>
         </Link>
 
         <div className={`nav-links ${mobileOpen ? 'active' : ''}`}>
@@ -49,6 +50,9 @@ const Navbar = () => {
           </Link>
           <Link to="/demo" className="btn-demo" onClick={() => setMobileOpen(false)}>
             Live Demo
+          </Link>
+          <Link to="/family-emergency" className="btn-family-emergency" onClick={() => setMobileOpen(false)}>
+            🚨 FamilyEmergency
           </Link>
         </div>
 
