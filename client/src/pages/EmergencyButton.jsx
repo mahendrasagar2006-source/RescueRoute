@@ -64,7 +64,7 @@ const EmergencyButton = () => {
 
       <section className="emergency-hero">
         <div className="container">
-          <h1>Family Emergency Button</h1>
+          <h1>Emergency Button</h1>
           <p>One tap to activate the entire city's emergency response system</p>
         </div>
       </section>

@@ -23,7 +23,7 @@ const Navbar = () => {
     { path: '/traffic', label: 'Traffic' },
     { path: '/hospital', label: 'Hospital' },
     { path: '/accident-help', label: 'Accident' },
-    { path: '/family-emergency', label: 'FamilyEmergency' }
+    //{ path: '/family-emergency', label: 'FamilyEmergency' }
   ];
 
   return (
@@ -48,11 +48,12 @@ const Navbar = () => {
           <Link to="/emergency" className="btn-emergency" onClick={() => setMobileOpen(false)}>
             🚨 Emergency
           </Link>
+          
+          <Link to="/family-emergency" className="btn-emergency" onClick={() => setMobileOpen(false)}>
+            🚨 FamilyEmergency
+          </Link>
           <Link to="/demo" className="btn-demo" onClick={() => setMobileOpen(false)}>
             Live Demo
-          </Link>
-          <Link to="/family-emergency" className="btn-family-emergency" onClick={() => setMobileOpen(false)}>
-            🚨 FamilyEmergency
           </Link>
         </div>
 

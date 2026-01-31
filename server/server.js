@@ -2,7 +2,8 @@ const http = require("http");
 const app = require("./app");
 const { initSocket } = require("./sockets/rescueSocket");
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
+
 
 // Create HTTP server
 const server = http.createServer(app);
