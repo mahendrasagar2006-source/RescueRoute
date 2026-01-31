@@ -1,34 +1,65 @@
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import './Navbar.css';
 
-export default function Navbar() {
+// ICONS
+import ambulanceIcon from '../assets/icons/ambulance.svg';
+
+const Navbar = () => {
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const location = useLocation();
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 50);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const navLinks = [
+    { path: '/', label: 'Home' },
+    { path: '/how-it-works', label: 'How It Works' },
+    { path: '/vehicle-alerts', label: 'Vehicles' },
+    { path: '/traffic', label: 'Traffic' },
+    { path: '/hospital', label: 'Hospital' },
+    { path: '/accident-help', label: 'Accident' },
+  ];
+
   return (
-    <nav style={styles.nav}>
-      <h3 style={styles.logo}>🚑 RescueRoute</h3>
-      <div style={styles.links}>
-        <Link to="/">Home</Link>
-        <Link to="/emergency">Emergency</Link>
-        <Link to="/vehicles">Vehicles</Link>
-        <Link to="/hospital">Hospital</Link>
-        <Link to="/demo">Demo</Link>
+    <nav className={`navbar ${scrolled ? 'scrolled' : ''}`}>
+      <div className="nav-container">
+        <Link to="/" className="logo">
+          <img src={ambulanceIcon} alt="RescueRoute" width="32" />
+          <span className="logo-text" style={{ marginLeft: 8 }}>RescueRoute</span>
+        </Link>
+
+        <div className={`nav-links ${mobileOpen ? 'active' : ''}`}>
+          {navLinks.map((link) => (
+            <Link
+              key={link.path}
+              to={link.path}
+              className={`nav-link ${location.pathname === link.path ? 'active' : ''}`}
+              onClick={() => setMobileOpen(false)}
+            >
+              {link.label}
+            </Link>
+          ))}
+          <Link to="/emergency" className="btn-emergency" onClick={() => setMobileOpen(false)}>
+            🚨 Emergency
+          </Link>
+          <Link to="/demo" className="btn-demo" onClick={() => setMobileOpen(false)}>
+            Live Demo
+          </Link>
+        </div>
+
+        <button className="mobile-toggle" onClick={() => setMobileOpen(!mobileOpen)}>
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
       </div>
     </nav>
   );
-}
-
-const styles = {
-  nav: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: "12px 20px",
-    backgroundColor: "#d90429",
-    color: "#fff",
-  },
-  logo: {
-    margin: 0,
-  },
-  links: {
-    display: "flex",
-    gap: "15px",
-  },
 };
+
+export default Navbar;
