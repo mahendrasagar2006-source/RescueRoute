@@ -1,15 +1,76 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { testEmergencyAlert, requestNotificationPermission } from '../components/EmergencySound';
 import './VehicleAlerts.css';
 
 const VehicleAlerts = () => {
   const [alertActive, setAlertActive] = useState(false);
+  const [nearbyVehicles, setNearbyVehicles] = useState(0);
+  const [myLocation, setMyLocation] = useState(null);
+  const [isSimulating, setIsSimulating] = useState(false);
 
-  const testAlert = () => {
-    setAlertActive(true);
-    if ('vibrate' in navigator) {
-      navigator.vibrate([1000, 200, 500, 200, 1000]);
+  // Simulate getting current location
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setMyLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          });
+        },
+        (error) => {
+          console.log('Location error:', error);
+          // Use default location for demo
+          setMyLocation({
+            lat: 17.4065, // Hyderabad coordinates
+            lng: 78.4772
+          });
+        }
+      );
+    } else {
+      // Default location for demo
+      setMyLocation({
+        lat: 17.4065,
+        lng: 78.4772
+      });
     }
+  }, []);
+
+  const handleTestAlert = async () => {
+    // Request notification permission first
+    await requestNotificationPermission();
+    
+    // Trigger alert on THIS device
+    setAlertActive(true);
+    testEmergencyAlert();
+    
+    // Simulate sending alerts to nearby vehicles
+    simulateNearbyVehicleAlerts();
+    
+    // Reset after 3 seconds
     setTimeout(() => setAlertActive(false), 3000);
+  };
+
+  const simulateNearbyVehicleAlerts = () => {
+    setIsSimulating(true);
+    
+    // Simulate finding 5-15 nearby vehicles
+    const vehicleCount = Math.floor(Math.random() * 11) + 5;
+    setNearbyVehicles(vehicleCount);
+    
+    // Simulate staggered alerts to nearby vehicles
+    for (let i = 0; i < vehicleCount; i++) {
+      setTimeout(() => {
+        console.log(`🚗 Vehicle ${i + 1} received alert`);
+        // In real implementation, this would be:
+        // socket.emit('emergency-alert', { lat, lng, radius: 500 });
+      }, i * 100); // Stagger by 100ms
+    }
+    
+    setTimeout(() => {
+      setIsSimulating(false);
+      setNearbyVehicles(0);
+    }, 5000);
   };
 
   return (
@@ -73,9 +134,33 @@ const VehicleAlerts = () => {
               </div>
             </div>
 
-            <button onClick={testAlert} className="test-btn">
+            <button onClick={handleTestAlert} className="test-btn">
               🔊 Test Alert Now
             </button>
+
+            {isSimulating && (
+              <div className="simulation-info">
+                <div className="sim-header">
+                  <span className="sim-icon">📡</span>
+                  <strong>Broadcasting Alert...</strong>
+                </div>
+                <p className="sim-count">
+                  Alerting <span className="highlight-number">{nearbyVehicles}</span> nearby vehicles within 500m radius
+                </p>
+                <div className="sim-status">
+                  <div className="status-item">✅ Sound playing on all devices</div>
+                  <div className="status-item">✅ Vibration triggered</div>
+                  <div className="status-item">✅ Notifications sent</div>
+                </div>
+              </div>
+            )}
+
+            {myLocation && !isSimulating && (
+              <div className="location-info">
+                <p>📍 Your Location: {myLocation.lat.toFixed(4)}, {myLocation.lng.toFixed(4)}</p>
+                <p className="info-note">In production: All vehicles within 500m would receive this alert</p>
+              </div>
+            )}
           </div>
 
           <div className="content-right">
@@ -104,15 +189,28 @@ const VehicleAlerts = () => {
             </div>
 
             <div className="info-box">
-              <h4>How It Works</h4>
+              <h4>How It Works in Production</h4>
               <ol>
-                <li>Ambulance activates emergency mode</li>
-                <li>Nearby vehicles (within 500m) receive alert</li>
-                <li>Phone vibrates with unique pattern</li>
-                <li>Emergency tone plays</li>
-                <li>Optional voice announcement via Bluetooth</li>
+                <li>Ambulance driver activates emergency mode</li>
+                <li>Backend server receives ambulance GPS location</li>
+                <li>Server calculates all vehicles within 500m radius</li>
+                <li>Server sends WebSocket alert to nearby vehicles</li>
+                <li>Each vehicle's phone plays emergency tone</li>
+                <li>Vibration triggers (Long-Short-Long pattern)</li>
+                <li>Notification appears even if app is in background</li>
                 <li>Driver clears lane instinctively</li>
               </ol>
+              
+              <div className="tech-stack">
+                <h5>Technology Stack:</h5>
+                <ul>
+                  <li>🔧 Backend: Node.js + Socket.IO</li>
+                  <li>📍 GPS: Geolocation API</li>
+                  <li>🔊 Audio: Web Audio API</li>
+                  <li>📳 Haptics: Vibration API</li>
+                  <li>🔔 Alerts: Push Notification API</li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>

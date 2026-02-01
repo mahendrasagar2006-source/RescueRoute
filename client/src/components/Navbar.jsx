@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import './Navbar.css';
 
 // ICONS
@@ -9,6 +10,7 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
+  const { user, isAuthenticated, logout } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -18,20 +20,18 @@ const Navbar = () => {
 
   const navLinks = [
     { path: '/', label: 'Home' },
-    //{ path: '/how-it-works', label: 'How It Works' },
     { path: '/vehicle-alerts', label: 'Vehicles' },
     { path: '/traffic', label: 'Traffic' },
-    { path: '/hospital', label: 'Hospital' },
     { path: '/accident-help', label: 'Accident' },
-    //{ path: '/family-emergency', label: 'FamilyEmergency' }
   ];
+
 
   return (
     <nav className={`navbar ${scrolled ? 'scrolled' : ''}`}>
       <div className="nav-container">
         <Link to="/" className="logo">
           <img src={ambulanceIcon} alt="RescueRoute" width="100" />
-          <span className="logo-text" style={{ marginLeft: 8 }}>ResQ</span>
+          <span className="logo-text" style={{ marginLeft: 8 }}>Res'Q'</span>
         </Link>
 
         <div className={`nav-links ${mobileOpen ? 'active' : ''}`}>
@@ -45,16 +45,52 @@ const Navbar = () => {
               {link.label}
             </Link>
           ))}
-          <Link to="/emergency" className="btn-emergency" onClick={() => setMobileOpen(false)}>
+          <Link
+            to="/family-emergency"
+            className="btn-emergency"
+            onClick={() => setMobileOpen(false)}
+          >
+            Family Emergency
+          </Link>
+
+
+
+          <Link
+            to="/emergency"
+            className="btn-emergency"
+            onClick={() => setMobileOpen(false)}
+          >
             🚨 Emergency
           </Link>
-          
-          <Link to="/family-emergency" className="btn-emergency" onClick={() => setMobileOpen(false)}>
-            🚨 FamilyEmergency
+          <Link
+            to="/hospital"
+            className="btn-emergency"
+            onClick={() => setMobileOpen(false)}
+          >
+            Hospital
+          </Link>
+
+
+
+          <Link to="/assistant" className="nav-link" onClick={() => setMobileOpen(false)}>
+            Assistant 💬
           </Link>
           <Link to="/demo" className="btn-demo" onClick={() => setMobileOpen(false)}>
             Live Demo
           </Link>
+
+          {isAuthenticated ? (
+            <div className="nav-user-info">
+              <span className="user-name">Hey, {user.name}</span>
+              <button className="btn-logout" onClick={() => { logout(); setMobileOpen(false); }}>
+                Logout
+              </button>
+            </div>
+          ) : (
+            <Link to="/login" className="btn-login" onClick={() => setMobileOpen(false)}>
+              Login
+            </Link>
+          )}
         </div>
 
         <button className="mobile-toggle" onClick={() => setMobileOpen(!mobileOpen)}>

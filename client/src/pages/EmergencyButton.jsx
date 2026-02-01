@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import EmergencySound from '../components/EmergencySound';
 import './EmergencyButton.css';
+import { triggerSelfUseEmergency } from '../services/familyEmergencyApi';
+import { getCurrentLocation } from '../services/location';
 
 const EmergencyButton = () => {
   const [formData, setFormData] = useState({
@@ -27,35 +29,67 @@ const EmergencyButton = () => {
     setLogs(prev => [{ message, time: new Date().toLocaleTimeString() }, ...prev]);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setEmergencyActive(true);
-    
-    // Simulate emergency flow
-    setTimeout(() => {
-      setStatus(prev => ({ ...prev, emergency: 'ACTIVE 🚨' }));
-      addLog('Emergency button pressed');
-    }, 100);
+    addLog('Initiating emergency sequence...');
 
-    setTimeout(() => {
-      setStatus(prev => ({ ...prev, ambulance: 'Dispatched 🚑' }));
-      addLog('Ambulance #AB-1234 dispatched');
-    }, 1500);
+    try {
+      const location = await getCurrentLocation();
+      const userId = 'USER-' + Date.now();
 
-    setTimeout(() => {
-      setStatus(prev => ({ ...prev, traffic: 'Clearing Route 🚦' }));
-      addLog('Traffic signals synchronized');
-    }, 2500);
+      // Mirroring the medical profile structure expected by the backend
+      const medicalProfile = {
+        name: formData.name,
+        age: parseInt(formData.age),
+        bloodGroup: formData.bloodGroup,
+        allergies: formData.allergies,
+        condition: formData.symptoms || "Critical condition reported via Emergency Button"
+      };
 
-    setTimeout(() => {
-      setStatus(prev => ({ ...prev, hospital: 'Preparing ER 🏥' }));
-      addLog('Hospital notified - ER ready');
-    }, 3500);
+      addLog('Sending alert to RescueRoute servers...');
+      const response = await triggerSelfUseEmergency({
+        userId,
+        location: {
+          lat: location.lat,
+          lng: location.lng
+        },
+        medicalProfile
+      });
 
-    setTimeout(() => {
-      setStatus(prev => ({ ...prev, eta: '8 minutes ⏱️' }));
-      addLog('ETA calculated - 8 minutes');
-    }, 4500);
+      if (response.success) {
+        setStatus(prev => ({ ...prev, emergency: 'ACTIVE 🚨' }));
+        addLog(`Emergency registered: ${response.emergency.emergencyId}`);
+        addLog('Notifying emergency contacts...');
+
+        // Keep simulation running for those who stay or if navigation takes a moment
+        setTimeout(() => {
+          setStatus(prev => ({ ...prev, ambulance: 'Dispatched 🚑' }));
+          addLog('Ambulance #AB-1234 dispatched');
+        }, 1500);
+
+        setTimeout(() => {
+          setStatus(prev => ({ ...prev, traffic: 'Clearing Route 🚦' }));
+          addLog('Traffic signals synchronized - Green Corridor Active');
+        }, 3000);
+
+        setTimeout(() => {
+          setStatus(prev => ({ ...prev, hospital: 'Preparing ER 🏥' }));
+          addLog('Hospital notified - ER ready for patient');
+        }, 4500);
+
+        setTimeout(() => {
+          setStatus(prev => ({ ...prev, eta: '8 minutes ⏱️' }));
+          addLog('ETA calculated - 8 minutes to arrival');
+        }, 6000);
+      } else {
+        throw new Error(response.error || 'Failed to connect to server');
+      }
+    } catch (error) {
+      console.error('Emergency trigger error:', error);
+      addLog(`❌ Error: ${error.message}`);
+      setEmergencyActive(false);
+    }
   };
 
   return (
@@ -80,7 +114,7 @@ const EmergencyButton = () => {
                   <input
                     type="text"
                     value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     placeholder="Enter patient name"
                     required
                   />
@@ -91,7 +125,7 @@ const EmergencyButton = () => {
                   <input
                     type="number"
                     value={formData.age}
-                    onChange={(e) => setFormData({...formData, age: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, age: e.target.value })}
                     placeholder="Enter age"
                     required
                   />
@@ -101,7 +135,7 @@ const EmergencyButton = () => {
                   <label>Blood Group</label>
                   <select
                     value={formData.bloodGroup}
-                    onChange={(e) => setFormData({...formData, bloodGroup: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, bloodGroup: e.target.value })}
                     required
                   >
                     <option value="">Select blood group</option>
@@ -121,7 +155,7 @@ const EmergencyButton = () => {
                   <input
                     type="text"
                     value={formData.allergies}
-                    onChange={(e) => setFormData({...formData, allergies: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, allergies: e.target.value })}
                     placeholder="e.g., Penicillin, None"
                   />
                 </div>
@@ -131,7 +165,7 @@ const EmergencyButton = () => {
                   <input
                     type="tel"
                     value={formData.contact}
-                    onChange={(e) => setFormData({...formData, contact: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
                     placeholder="Phone number"
                     required
                   />
@@ -142,7 +176,7 @@ const EmergencyButton = () => {
                   <input
                     type="text"
                     value={formData.location}
-                    onChange={(e) => setFormData({...formData, location: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                     placeholder="Auto-detected"
                   />
                 </div>
@@ -151,7 +185,7 @@ const EmergencyButton = () => {
                   <label>Symptoms / Condition</label>
                   <textarea
                     value={formData.symptoms}
-                    onChange={(e) => setFormData({...formData, symptoms: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, symptoms: e.target.value })}
                     rows="3"
                     placeholder="Describe the emergency..."
                   />

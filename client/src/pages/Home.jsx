@@ -4,7 +4,6 @@ import './Home.css';
 
 // IMAGES
 import hero from "../assets/images/hero.png";
-import city from "../assets/images/emergency-city.png";
 
 const Home = () => {
   return (

@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './TrafficDashboard.css';
-import trafficMap from "../assets/images/traffic-map.png";
 import trafficIcon from "../assets/icons/traffic.svg";
+import { connectSocket, onEmergencyUpdate, offEmergencyUpdate } from '../services/socket';
+import familyEmergencyApi from '../services/familyEmergencyApi';
 
 const TrafficDashboard = () => {
   const [signals, setSignals] = useState([
@@ -12,24 +13,62 @@ const TrafficDashboard = () => {
   ]);
 
   const [ambulanceActive, setAmbulanceActive] = useState(false);
+  const [activeEmergency, setActiveEmergency] = useState(null);
 
-  const startDemo = () => {
+  useEffect(() => {
+    connectSocket();
+
+    // Fetch existing active emergency on mount
+    const fetchActive = async () => {
+      try {
+        const res = await familyEmergencyApi.getActiveEmergencies();
+        if (res.success && res.emergencies && res.emergencies.length > 0) {
+          console.log('Traffic Dashboard: Loading existing active emergency');
+          setActiveEmergency(res.emergencies[0]);
+          triggerGreenCorridor();
+        }
+      } catch (err) {
+        console.error('Failed to fetch active emergencies:', err);
+      }
+    };
+    fetchActive();
+
+    const handleUpdate = (data) => {
+      console.log('Traffic Dashboard received update:', data);
+      if (data.type && data.type.startsWith('FAMILY_EMERGENCY_')) {
+        setActiveEmergency(data.emergency);
+        triggerGreenCorridor();
+      }
+    };
+
+    onEmergencyUpdate(handleUpdate);
+
+    return () => {
+      offEmergencyUpdate(handleUpdate);
+    };
+  }, []);
+
+  const triggerGreenCorridor = () => {
     setAmbulanceActive(true);
-    
+
+    // Reset signals first
+    setSignals(prev => prev.map(s => ({ ...s, status: 'red' })));
+
+    // Sequential green light activation
     setTimeout(() => {
-      setSignals(prev => prev.map(s => s.id === 1 ? {...s, status: 'green'} : s));
+      setSignals(prev => prev.map(s => s.id === 1 ? { ...s, status: 'green' } : s));
     }, 1000);
 
     setTimeout(() => {
-      setSignals(prev => prev.map(s => s.id === 2 ? {...s, status: 'green'} : s));
+      setSignals(prev => prev.map(s => s.id === 2 ? { ...s, status: 'green' } : s));
     }, 2000);
 
     setTimeout(() => {
-      setSignals(prev => prev.map(s => s.id === 3 ? {...s, status: 'green'} : s));
+      setSignals(prev => prev.map(s => s.id === 3 ? { ...s, status: 'green' } : s));
     }, 3000);
 
     setTimeout(() => {
-      setSignals(prev => prev.map(s => s.id === 4 ? {...s, status: 'green'} : s));
+      setSignals(prev => prev.map(s => s.id === 4 ? { ...s, status: 'green' } : s));
     }, 4000);
   };
 
@@ -46,15 +85,22 @@ const TrafficDashboard = () => {
         <div className="container">
           <div className="dashboard-header">
             <h2><img src={trafficIcon} alt="Traffic icon" className="traffic-icon" /> Live Traffic Signals</h2>
-            <button onClick={startDemo} className="demo-btn">
-              🚑 Start Demo
-            </button>
+            <div className="header-actions">
+              {activeEmergency && (
+                <div className="live-alert-badge">
+                  🚨 LIVE EMERGENCY: {activeEmergency.emergencyId}
+                </div>
+              )}
+              <button onClick={triggerGreenCorridor} className="demo-btn">
+                🚑 Run Manual Demo
+              </button>
+            </div>
           </div>
 
           <div className="dashboard-grid">
             <div className="map-view">
               <div className="map-container">
-                <div className="ambulance-marker" style={{display: ambulanceActive ? 'flex' : 'none'}}>
+                <div className="ambulance-marker" style={{ display: ambulanceActive ? 'flex' : 'none' }}>
                   🚑 Ambulance
                 </div>
                 {signals.map(signal => (

@@ -35,6 +35,29 @@
   font-weight: 600;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.live-alert-badge {
+  padding: 10px 20px;
+  background: rgba(255, 0, 0, 0.2);
+  color: var(--red);
+  border: 1px solid var(--red);
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 14px;
+  animation: pulse-red 2s infinite;
+}
+
+@keyframes pulse-red {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.4); }
+  70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(255, 0, 0, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
+}
+
 .demo-btn {
   padding: 14px 28px;
   background: var(--green);

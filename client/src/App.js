@@ -11,29 +11,36 @@ import HospitalDashboard from './pages/HospitalDashboard';
 import AccidentHelp from './pages/AccidentHelp';
 import FamilyEmergency from './pages/FamilyEmergency';
 import Demo from './pages/Demo';
+import Login from './pages/Login';
+import Assistant from './pages/Assistant';
+import { AuthProvider } from './context/AuthContext';
 import './App.css';
 
 function App() {
   return (
-    <Router>
-      <div className="app">
-        <Navbar />
-        <main className="main-content">
-          <Routes>
-            <Route path="/" element={<Home />} />
-           
-            <Route path="/emergency" element={<EmergencyButton />} />
-            <Route path="/vehicle-alerts" element={<VehicleAlerts />} />
-            <Route path="/traffic" element={<TrafficDashboard />} />
-            <Route path="/hospital" element={<HospitalDashboard />} />
-            <Route path="/accident-help" element={<AccidentHelp />} />
-            <Route path="/demo" element={<Demo />} />
-            <Route path="/family-emergency" element={<FamilyEmergency/>} />
-          </Routes>
-        </main>
-        <Footer />
-      </div>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <div className="app">
+          <Navbar />
+          <main className="main-content">
+            <Routes>
+              <Route path="/" element={<Home />} />
+
+              <Route path="/emergency" element={<EmergencyButton />} />
+              <Route path="/vehicle-alerts" element={<VehicleAlerts />} />
+              <Route path="/traffic" element={<TrafficDashboard />} />
+              <Route path="/hospital" element={<HospitalDashboard />} />
+              <Route path="/accident-help" element={<AccidentHelp />} />
+              <Route path="/demo" element={<Demo />} />
+              <Route path="/family-emergency" element={<FamilyEmergency />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/assistant" element={<Assistant />} />
+            </Routes>
+          </main>
+          <Footer />
+        </div>
+      </Router>
+    </AuthProvider>
   );
 }
 
