@@ -4,12 +4,45 @@ import trafficIcon from "../assets/icons/traffic.svg";
 import { connectSocket, onEmergencyUpdate, offEmergencyUpdate } from '../services/socket';
 import familyEmergencyApi from '../services/familyEmergencyApi';
 
+// Leaflet imports
+import { MapContainer } from 'react-leaflet/MapContainer';
+import { TileLayer } from 'react-leaflet/TileLayer';
+import { Marker } from 'react-leaflet/Marker';
+import { Popup } from 'react-leaflet/Popup';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+console.log('Leaflet Components:', { MapContainer, TileLayer, Marker, Popup });
+
+// Fix for default Leaflet icon not appearing in React
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
+  iconUrl: require('leaflet/dist/images/marker-icon.png'),
+  shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
+});
+
+// Custom Icon for Signals (Red/Green)
+const getSignalIcon = (status) => {
+  return L.divIcon({
+    className: 'custom-signal-icon',
+    html: `<div class="signal-dot ${status}"></div>`,
+    iconSize: [20, 20],
+  });
+};
+
+const ambulanceIcon = L.divIcon({
+  className: 'custom-ambulance-icon',
+  html: `<div class="ambulance-emoji">🚑</div>`,
+  iconSize: [30, 30],
+});
+
 const TrafficDashboard = () => {
   const [signals, setSignals] = useState([
-    { id: 1, name: 'Main St & 1st Ave', status: 'red', distance: '500m' },
-    { id: 2, name: '2nd Ave & Park Rd', status: 'green', distance: '300m' },
-    { id: 3, name: '3rd Ave & Hill St', status: 'red', distance: '100m' },
-    { id: 4, name: '4th Ave & Lake Rd', status: 'amber', distance: '800m' },
+    { id: 1, name: 'Main St & 1st Ave', status: 'red', distance: '500m', position: [12.9716, 77.5946] },
+    { id: 2, name: '2nd Ave & Park Rd', status: 'green', distance: '300m', position: [12.9726, 77.5956] },
+    { id: 3, name: '3rd Ave & Hill St', status: 'red', distance: '100m', position: [12.9710, 77.5960] },
+    { id: 4, name: '4th Ave & Lake Rd', status: 'amber', distance: '800m', position: [12.9730, 77.5970] },
   ]);
 
   const [ambulanceActive, setAmbulanceActive] = useState(false);
@@ -99,18 +132,31 @@ const TrafficDashboard = () => {
 
           <div className="dashboard-grid">
             <div className="map-view">
-              <div className="map-container">
-                <div className="ambulance-marker" style={{ display: ambulanceActive ? 'flex' : 'none' }}>
-                  🚑 Ambulance
-                </div>
+              <MapContainer center={[12.9716, 77.5946]} zoom={15} scrollWheelZoom={false} className="leaflet-map-container">
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+
+                {ambulanceActive && (
+                  <Marker position={[12.9700, 77.5930]} icon={ambulanceIcon}>
+                    <Popup>Ambulance En Route</Popup>
+                  </Marker>
+                )}
+
                 {signals.map(signal => (
-                  <div key={signal.id} className={`signal-marker signal-${signal.id}`}>
-                    <div className={`signal-light ${signal.status}`}></div>
-                    <span>{signal.name}</span>
-                  </div>
+                  <Marker
+                    key={signal.id}
+                    position={signal.position}
+                    icon={getSignalIcon(signal.status)}
+                  >
+                    <Popup>
+                      <strong>{signal.name}</strong><br />
+                      Status: {signal.status.toUpperCase()}
+                    </Popup>
+                  </Marker>
                 ))}
-                <div className="route-path"></div>
-              </div>
+              </MapContainer>
             </div>
 
             <div className="signals-list">

@@ -3,7 +3,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: url('/Users/sandeepreddy/.gemini/antigravity/brain/40023133-c081-4f0f-ab7f-22258b3a659a/login_background_1769902872297.png') no-repeat center center fixed;
+    background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%) no-repeat center center fixed;
     background-size: cover;
     position: relative;
     overflow: auto;
