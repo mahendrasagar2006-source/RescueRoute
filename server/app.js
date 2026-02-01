@@ -2,11 +2,12 @@ const express = require("express");
 const cors = require("cors");
 
 // Import routes
-const emergencyRoutes = require("./routes/emergencyRoutes");
 const ambulanceRoutes = require("./routes/ambulanceRoutes");
 const hospitalRoutes = require("./routes/hospitalRoutes");
 const trafficRoutes = require("./routes/trafficRoutes");
 const vehicleRoutes = require("./routes/vehicleRoutes");
+const familyEmergencyRoutes = require("./routes/familyEmergencyRoutes");
+const authRoutes = require("./routes/authRoutes");
 
 const app = express();
 
@@ -16,11 +17,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
-app.use("/api/emergency", emergencyRoutes);
 app.use("/api/ambulance", ambulanceRoutes);
 app.use("/api/hospital", hospitalRoutes);
 app.use("/api/traffic", trafficRoutes);
 app.use("/api/vehicles", vehicleRoutes);
+app.use("/api/family-emergency", familyEmergencyRoutes);
+app.use("/api/auth", authRoutes);
 
 // Health check
 app.get("/", (req, res) => {
@@ -28,11 +30,12 @@ app.get("/", (req, res) => {
     message: "🚑 RescueRoute API is running",
     version: "1.0.0",
     endpoints: {
-      emergency: "/api/emergency",
       ambulance: "/api/ambulance",
       hospital: "/api/hospital",
       traffic: "/api/traffic",
       vehicles: "/api/vehicles",
+      familyEmergency: "/api/family-emergency",
+      auth: "/api/auth",
     },
   });
 });
