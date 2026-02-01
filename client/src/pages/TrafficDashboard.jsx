@@ -3,12 +3,14 @@ import './TrafficDashboard.css';
 import trafficIcon from "../assets/icons/traffic.svg";
 import { connectSocket, onEmergencyUpdate, offEmergencyUpdate } from '../services/socket';
 import familyEmergencyApi from '../services/familyEmergencyApi';
+import { MOCK_SIGNALS } from '../utils/constants';
 
 // Leaflet imports
 import { MapContainer } from 'react-leaflet/MapContainer';
 import { TileLayer } from 'react-leaflet/TileLayer';
 import { Marker } from 'react-leaflet/Marker';
 import { Popup } from 'react-leaflet/Popup';
+import { Circle } from 'react-leaflet/Circle';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -37,16 +39,19 @@ const ambulanceIcon = L.divIcon({
   iconSize: [30, 30],
 });
 
+const phoneIcon = L.divIcon({
+  className: 'custom-phone-icon',
+  html: `<div class="phone-emoji">📱</div>`,
+  iconSize: [25, 25],
+});
+
 const TrafficDashboard = () => {
-  const [signals, setSignals] = useState([
-    { id: 1, name: 'Main St & 1st Ave', status: 'red', distance: '500m', position: [12.9716, 77.5946] },
-    { id: 2, name: '2nd Ave & Park Rd', status: 'green', distance: '300m', position: [12.9726, 77.5956] },
-    { id: 3, name: '3rd Ave & Hill St', status: 'red', distance: '100m', position: [12.9710, 77.5960] },
-    { id: 4, name: '4th Ave & Lake Rd', status: 'amber', distance: '800m', position: [12.9730, 77.5970] },
-  ]);
+  const [signals, setSignals] = useState(MOCK_SIGNALS);
 
   const [ambulanceActive, setAmbulanceActive] = useState(false);
   const [activeEmergency, setActiveEmergency] = useState(null);
+  const [isLiveTracking, setIsLiveTracking] = useState(false);
+  const [liveDevices, setLiveDevices] = useState([]);
 
   useEffect(() => {
     connectSocket();
@@ -105,6 +110,37 @@ const TrafficDashboard = () => {
     }, 4000);
   };
 
+  const triggerLiveTrack = () => {
+    setIsLiveTracking(true);
+    // Generate 2 mock device positions within ~1.5km of the center
+    const center = [12.9716, 77.5946];
+    const newDevices = [
+      {
+        id: 'dev-1',
+        name: 'iPhone 15 Pro',
+        position: [
+          center[0] + (Math.random() - 0.5) * 0.02,
+          center[1] + (Math.random() - 0.5) * 0.02,
+        ]
+      },
+      {
+        id: 'dev-2',
+        name: 'Samsung Galaxy S24',
+        position: [
+          center[0] + (Math.random() - 0.5) * 0.02,
+          center[1] + (Math.random() - 0.5) * 0.02,
+        ]
+      }
+    ];
+    setLiveDevices(newDevices);
+
+    // Auto-stop after 10 seconds
+    setTimeout(() => {
+      setIsLiveTracking(false);
+      setLiveDevices([]);
+    }, 10000);
+  };
+
   return (
     <div className="traffic-page">
       <section className="traffic-hero">
@@ -124,6 +160,9 @@ const TrafficDashboard = () => {
                   🚨 LIVE EMERGENCY: {activeEmergency.emergencyId}
                 </div>
               )}
+              <button onClick={triggerLiveTrack} className={`track-btn ${isLiveTracking ? 'active' : ''}`}>
+                📡 {isLiveTracking ? 'Tracking Live...' : 'Test Live Track'}
+              </button>
               <button onClick={triggerGreenCorridor} className="demo-btn">
                 🚑 Run Manual Demo
               </button>
@@ -142,6 +181,24 @@ const TrafficDashboard = () => {
                   <Marker position={[12.9700, 77.5930]} icon={ambulanceIcon}>
                     <Popup>Ambulance En Route</Popup>
                   </Marker>
+                )}
+
+                {isLiveTracking && (
+                  <>
+                    <Circle
+                      center={[12.9716, 77.5946]}
+                      radius={3000}
+                      pathOptions={{ color: 'var(--green)', fillColor: 'var(--green)', fillOpacity: 0.1 }}
+                    />
+                    {liveDevices.map(device => (
+                      <Marker key={device.id} position={device.position} icon={phoneIcon}>
+                        <Popup>
+                          <strong>Active Device: {device.name}</strong><br />
+                          Status: Receiving Emergency Alerts
+                        </Popup>
+                      </Marker>
+                    ))}
+                  </>
                 )}
 
                 {signals.map(signal => (
